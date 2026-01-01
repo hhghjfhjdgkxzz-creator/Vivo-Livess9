@@ -18,6 +18,14 @@ export interface StoreItem {
   url: string;
 }
 
+export interface CPPartner {
+  id: string;
+  name: string;
+  avatar: string;
+  type: 'cp' | 'friend';
+  level?: number;
+}
+
 export interface User {
   id: string;
   customId: any; 
@@ -61,6 +69,15 @@ export interface User {
   seatIndex?: number;
   status?: string;
   activeEmoji?: string; 
+  cpPartner?: CPPartner | null;
+  roomTemplate?: {
+    title: string;
+    category: string;
+    thumbnail: string;
+    background: string;
+    isLocked: boolean;
+    password?: string;
+  };
 }
 
 export interface LuckyBag {
@@ -131,6 +148,7 @@ export interface Room {
   title: string;
   category: 'ترفيه' | 'ألعاب' | 'شعر' | 'تعارف';
   hostId: string;
+  hostCustomId?: any; 
   listeners: number;
   thumbnail: string;
   speakers: User[];
@@ -138,8 +156,8 @@ export interface Room {
   isLocked?: boolean;
   password?: string;
   micCount?: number; 
-  moderators?: string[]; // مصفوفة لآيديات المشرفين
-  kickedUsers?: string[]; // مصفوفة للمستخدمين المطرودين
+  moderators?: string[]; 
+  kickedUsers?: string[]; 
 }
 
 export interface LuckyMultiplier {
@@ -151,6 +169,7 @@ export interface LuckyMultiplier {
 export interface GameSettings {
   slotsWinRate: number;
   wheelWinRate: number;
+  lionWinRate: number;
   luckyGiftWinRate: number;
   luckyGiftRefundPercent: number;
   luckyXEnabled: boolean;
@@ -160,7 +179,16 @@ export interface GameSettings {
   slotsSevenX: number;    
   slotsFruitX: number;    
   availableEmojis?: string[]; 
-  emojiDuration?: number; 
+  emojiDuration?: number;
+  wheelChips?: number[];
+  slotsChips?: number[];
+  lionChips?: number[];
+  cpGiftId?: string;
+  friendGiftId?: string;
+  cpGiftUrl?: string;
+  cpGiftPrice?: number;
+  friendGiftUrl?: string;
+  friendGiftPrice?: number;
 }
 
 export interface WheelItem {
@@ -178,10 +206,4 @@ export interface SlotItem {
   multiplier: number;
 }
 
-export interface Contributor {
-  id: string;
-  name: string;
-  avatar: string;
-  amount: number;
-  rank: number;
-}
+export type GameType = 'wheel' | 'slots' | 'lion';
