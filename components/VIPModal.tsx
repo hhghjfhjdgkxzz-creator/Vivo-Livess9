@@ -1,0 +1,121 @@
+
+import React from 'react';
+import { motion } from 'framer-motion';
+import { X, Check, Crown, Lock, ArrowUpCircle } from 'lucide-react';
+import { VIPPackage, User } from '../types';
+
+interface VIPModalProps {
+  user: User;
+  vipLevels: VIPPackage[];
+  onClose: () => void;
+  onBuy: (vip: VIPPackage) => void;
+}
+
+const VIPModal: React.FC<VIPModalProps> = ({ user, vipLevels, onClose, onBuy }) => {
+  return (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose}></div>
+      
+      <motion.div 
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="relative w-full max-w-sm bg-gradient-to-br from-slate-900 via-[#1a1f35] to-slate-900 rounded-[2rem] border border-amber-500/30 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+      >
+        {/* Header */}
+        <div className="relative p-6 text-center border-b border-white/5">
+          <button onClick={onClose} className="absolute top-4 right-4 p-2 text-white/50 hover:text-white transition">
+             <X size={20} />
+          </button>
+          <div className="inline-block p-3 rounded-full bg-amber-500/10 mb-2 border border-amber-500/20">
+             <Crown size={32} className="text-amber-500" />
+          </div>
+          <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-600">
+             عضوية VIP
+          </h2>
+          <p className="text-xs text-slate-400 mt-1">تميز بإطارات حصرية وألقاب ملكية</p>
+          
+          <div className="mt-4 bg-black/40 rounded-xl p-2 flex items-center justify-between px-4 border border-white/5">
+             <span className="text-xs text-slate-400">رصيدك الحالي</span>
+             <span className="font-bold text-yellow-400 flex items-center gap-1">
+                {(user.coins ?? 0).toLocaleString()} <span className="text-[10px]">🪙</span>
+             </span>
+          </div>
+        </div>
+
+        {/* List */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
+           {vipLevels.length === 0 && (
+             <div className="text-center py-10 text-slate-500 text-xs">لا توجد مستويات VIP متاحة حالياً</div>
+           )}
+           {vipLevels.map((vip) => {
+             const isCurrentLevel = user.isVip && user.vipLevel === vip.level;
+             const isHigherLevel = user.isVip && (user.vipLevel || 0) > vip.level;
+             const canAfford = user.coins >= vip.cost;
+
+             return (
+               <div 
+                 key={vip.level} 
+                 className={`relative rounded-2xl p-3 border transition-all overflow-hidden group ${
+                   isCurrentLevel 
+                     ? 'bg-amber-900/20 border-amber-500/80 shadow-[0_0_15px_rgba(245,158,11,0.2)]' 
+                     : isHigherLevel ? 'bg-slate-800/20 border-white/5 opacity-60' : 'bg-slate-800/50 border-white/5 hover:border-white/10'
+                 }`}
+               >
+                 {isCurrentLevel && <div className="absolute inset-0 bg-amber-500/5 animate-pulse"></div>}
+
+                 <div className="flex items-center gap-4 relative z-10">
+                    <div className="relative w-16 h-16 flex-shrink-0">
+                       <div className="absolute inset-1 rounded-full border border-white/10 bg-black">
+                          <img src={user.avatar} className="w-full h-full rounded-full opacity-50 grayscale" alt="preview" />
+                       </div>
+                       <img src={vip.frameUrl || 'https://cdn-icons-png.flaticon.com/512/763/763328.png'} className="absolute inset-0 w-full h-full object-contain pointer-events-none drop-shadow-lg scale-[1.1]" alt={vip.name} />
+                       <div className="absolute -bottom-1 -right-1 bg-black/80 text-[10px] px-1.5 rounded-full border border-white/10 text-white font-bold">
+                          {vip.level}
+                       </div>
+                    </div>
+
+                    <div className="flex-1">
+                       <h3 className={`font-bold text-lg ${vip.color}`}>{vip.name}</h3>
+                       <p className="text-[10px] text-slate-400">إطار {vip.name} الحصري + شارة</p>
+                    </div>
+
+                    <div className="flex flex-col items-end gap-1">
+                       {isCurrentLevel ? (
+                         <div className="px-3 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded-lg flex items-center gap-1 border border-green-500/20">
+                            <Check size={12} /> مفعل
+                         </div>
+                       ) : isHigherLevel ? (
+                         <div className="px-3 py-1 bg-slate-700/50 text-slate-500 text-[10px] font-bold rounded-lg border border-white/5">
+                            مستوى سابق
+                         </div>
+                       ) : (
+                         <button 
+                            disabled={!canAfford}
+                            onClick={() => {
+                                if(confirm(`هل تريد شراء باقة ${vip.name} مقابل ${vip.cost.toLocaleString()} كوينز؟`)) {
+                                    onBuy(vip);
+                                }
+                            }}
+                            className={`px-4 py-1.5 rounded-xl text-xs font-bold flex flex-col items-center min-w-[80px] transition-all active:scale-95 ${
+                               canAfford 
+                                 ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-black shadow-lg shadow-amber-900/50 hover:brightness-110' 
+                                 : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                            }`}
+                         >
+                            <span className="flex items-center gap-1">{user.isVip ? 'ترقية' : 'شراء'} <ArrowUpCircle size={10}/></span>
+                            <span className="text-[9px] opacity-80">{vip.cost.toLocaleString()} 🪙</span>
+                         </button>
+                       )}
+                    </div>
+                 </div>
+               </div>
+             );
+           })}
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export default VIPModal;
